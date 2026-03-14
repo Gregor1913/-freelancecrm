@@ -1,4 +1,21 @@
+"use client";
+
+import { useEffect } from "react";
+import { supabase } from "@/lib/supabase";
+
 export default function Home() {
+  useEffect(() => {
+    supabase
+      .from("clients")
+      .select("*")
+      .then(({ data, error }) => {
+        if (error) {
+          console.error("Supabase error:", error);
+          return;
+        }
+        console.log("Clients:", data);
+      });
+  }, []);
   return (
     <div className="min-h-screen bg-white">
       {/* Navbar */}
