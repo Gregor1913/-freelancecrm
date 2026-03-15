@@ -14,9 +14,30 @@ export default function PricingPage() {
       const response = await fetch('/api/stripe/checkout', {
         method: 'POST',
       })
+      if (!response.ok) {
+        if (response.status === 401) {
+          alert('Чтобы оформить подписку, сначала войдите в аккаунт.')
+        } else {
+          let errorMessage = 'Ошибка при оформлении подписки'
+          try {
+            const errorData = await response.json()
+            if (errorData?.error) {
+              errorMessage = errorData.error
+            }
+          } catch {
+            // игнорируем ошибки парсинга
+          }
+          alert(errorMessage)
+        }
+        setLoading(false)
+        return
+      }
+
       const data = await response.json()
-      if (data.url) {
+      if (data?.url) {
         window.location.href = data.url
+      } else {
+        alert('Не удалось получить ссылку на оплату. Попробуйте ещё раз.')
       }
     } catch (error) {
       alert('Ошибка при оформлении подписки')

@@ -1,109 +1,183 @@
-"use client";
+'use client'
 
-import { useUser, UserButton } from "@clerk/nextjs";
-import Link from "next/link";
+import { useState, useEffect } from 'react'
+import { useUser, UserButton } from '@clerk/nextjs'
+import { supabase } from '@/lib/supabase'
+import Link from 'next/link'
 
-const sidebarLinks = [
-  { href: "/dashboard", label: "Dashboard", icon: "🏠" },
-  { href: "/dashboard/clients", label: "Клиенты", icon: "👥" },
-  { href: "/dashboard/deals", label: "Сделки", icon: "💼" },
-  { href: "/dashboard/invoices", label: "Инвойсы", icon: "📄" },
-  { href: "/dashboard/reminders", label: "Напоминания", icon: "🔔" },
-];
-
-const statCards = [
-  { label: "Всего клиентов", value: "0" },
-  { label: "Активных сделок", value: "0" },
-  { label: "Инвойсов", value: "0" },
-  { label: "Доход", value: "$0" },
-];
+interface Stats {
+  totalClients: number
+  totalDeals: number
+  totalInvoices: number
+  totalRevenue: number
+  paidInvoices: number
+  activeDeals: number
+}
 
 export default function Dashboard() {
-  const { user } = useUser();
+  const { user } = useUser()
+  const [stats, setStats] = useState<Stats>({
+    totalClients: 0,
+    totalDeals: 0,
+    totalInvoices: 0,
+    totalRevenue: 0,
+    paidInvoices: 0,
+    activeDeals: 0,
+  })
+  const [loading, setLoading] = useState(true)
 
-  const emailName =
-    user?.primaryEmailAddress?.emailAddress?.split("@")[0] ?? "";
-  const displayName =
-    user?.firstName ||
-    user?.fullName ||
-    user?.username ||
-    emailName ||
-    "Пользователь";
+  useEffect(() => {
+    if (user) loadStats()
+  }, [user])
+
+  async function loadStats() {
+    const [clients, deals, invoices] = await Promise.all([
+      supabase.from('clients').select('id').eq('user_id', user?.id),
+      supabase.from('deals').select('id, status').eq('user_id', user?.id),
+      supabase.from('invoices').select('id, amount, status').eq('user_id', user?.id),
+    ])
+
+    const paidInvoices = invoices.data?.filter(inv => inv.status === 'paid') || []
+    const totalRevenue = paidInvoices.reduce((sum, inv) => sum + inv.amount, 0)
+    const activeDeals = deals.data?.filter(d => d.status === 'in_progress').length || 0
+
+    setStats({
+      totalClients: clients.data?.length || 0,
+      totalDeals: deals.data?.length || 0,
+      totalInvoices: invoices.data?.length || 0,
+      totalRevenue,
+      paidInvoices: paidInvoices.length,
+      activeDeals,
+    })
+    setLoading(false)
+  }
+
+  const cards = [
+    { label: 'Всего клиентов',   value: stats.totalClients,              icon: '👥', color: '#3b82f6', bg: '#eff6ff', link: '/dashboard/clients' },
+    { label: 'Активных сделок',  value: stats.activeDeals,               icon: '💼', color: '#f59e0b', bg: '#fffbeb', link: '/dashboard/deals' },
+    { label: 'Инвойсов оплачено',value: stats.paidInvoices,              icon: '📄', color: '#22c55e', bg: '#f0fdf4', link: '/dashboard/invoices' },
+    { label: 'Общий доход',      value: `${stats.totalRevenue.toLocaleString()} ₽`, icon: '💰', color: '#8b5cf6', bg: '#f5f3ff', link: '/dashboard/invoices' },
+  ]
 
   return (
-    <div className="flex min-h-screen bg-zinc-50">
-      {/* Sidebar */}
-      <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-zinc-200 bg-white">
-        <div className="flex h-16 items-center border-b border-zinc-200 px-6">
-          <Link href="/dashboard" className="text-lg font-bold text-zinc-900">
+    <div style={{backgroundColor: '#f9fafb', minHeight: '100vh'}}>
+
+      {/* Navbar */}
+      <nav style={{backgroundColor: 'white', borderBottom: '1px solid #e5e7eb', padding: '0 2rem', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 10}}>
+        <div style={{display: 'flex', alignItems: 'center', gap: '2rem'}}>
+          <h1 style={{fontSize: '1.25rem', fontWeight: 'bold', color: '#2563eb', margin: 0}}>
             FreelanceCRM
-          </Link>
-        </div>
-        <nav className="space-y-1 p-4">
-          {sidebarLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100 hover:text-zinc-900 data-[active]:bg-zinc-100 data-[active]:text-zinc-900"
-              data-active={link.href === "/dashboard"}
-            >
-              <span className="text-lg">{link.icon}</span>
-              {link.label}
-            </Link>
-          ))}
-        </nav>
-      </aside>
-
-      {/* Main content */}
-      <div className="ml-64 flex flex-1 flex-col">
-        {/* Header */}
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-zinc-200 bg-white px-8 shadow-sm">
-          <h1 className="text-xl font-semibold text-zinc-800">
-            Привет, {displayName}! 👋
           </h1>
-          <div className="flex items-center">
-            <UserButton />
+          <div style={{display: 'flex', gap: '0.25rem'}}>
+            {[
+              { href: '/dashboard',          label: '🏠 Главная' },
+              { href: '/dashboard/clients',  label: '👥 Клиенты' },
+              { href: '/dashboard/deals',    label: '💼 Сделки' },
+              { href: '/dashboard/invoices', label: '📄 Инвойсы' },
+              { href: '/pricing',            label: '⭐ Pro' },
+            ].map(item => (
+              <Link
+                key={item.href}
+                href={item.href}
+                style={{padding: '0.5rem 0.75rem', borderRadius: '8px', textDecoration: 'none', color: '#374151', fontSize: '0.875rem', fontWeight: '500'}}
+              >
+                {item.label}
+              </Link>
+            ))}
           </div>
-        </header>
+        </div>
+        <div style={{display: 'flex', alignItems: 'center', gap: '1rem'}}>
+          <span style={{color: '#6b7280', fontSize: '0.875rem'}}>
+            {user?.firstName || user?.emailAddresses[0]?.emailAddress}
+          </span>
+          <UserButton />
+        </div>
+      </nav>
 
-        {/* Content */}
-        <main className="flex-1 p-8">
-          {/* Stats */}
-          <section className="mb-10">
-            <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
-              {statCards.map((card) => (
-                <div
-                  key={card.label}
-                  className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition-shadow hover:shadow"
-                >
-                  <p className="mb-2 text-sm font-medium text-zinc-500">
+      {/* Контент */}
+      <div style={{padding: '2rem'}}>
+
+        {/* Приветствие */}
+        <div style={{marginBottom: '2rem'}}>
+          <h2 style={{fontSize: '1.5rem', fontWeight: 'bold', color: '#111827', margin: '0 0 0.25rem 0'}}>
+            Привет, {user?.firstName || 'фрилансер'}! 👋
+          </h2>
+          <p style={{color: '#6b7280', margin: 0}}>
+            Вот что происходит в твоём бизнесе сегодня
+          </p>
+        </div>
+
+        {/* Карточки статистики */}
+        {loading ? (
+          <p style={{color: '#6b7280'}}>Загрузка статистики...</p>
+        ) : (
+          <div style={{display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', marginBottom: '2rem'}}>
+            {cards.map((card, i) => (
+              <Link
+                key={i}
+                href={card.link}
+                style={{textDecoration: 'none'}}
+              >
+                <div style={{backgroundColor: 'white', borderRadius: '12px', padding: '1.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', border: `1px solid ${card.color}20`, cursor: 'pointer', transition: 'transform 0.1s'}}>
+                  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem'}}>
+                    <span style={{fontSize: '2rem'}}>{card.icon}</span>
+                    <span style={{backgroundColor: card.bg, color: card.color, padding: '0.25rem 0.75rem', borderRadius: '999px', fontSize: '0.75rem', fontWeight: '600'}}>
+                      Live
+                    </span>
+                  </div>
+                  <p style={{fontSize: '2rem', fontWeight: 'bold', color: card.color, margin: '0 0 0.25rem 0'}}>
+                    {card.value}
+                  </p>
+                  <p style={{color: '#6b7280', fontSize: '0.875rem', margin: 0}}>
                     {card.label}
                   </p>
-                  <p className="text-2xl font-bold text-zinc-900">{card.value}</p>
                 </div>
-              ))}
-            </div>
-          </section>
+              </Link>
+            ))}
+          </div>
+        )}
 
-          {/* Recent Activity */}
-          <section>
-            <h2 className="mb-4 text-lg font-semibold text-zinc-800">
-              Последние действия
-            </h2>
-            <div className="rounded-xl border border-zinc-200 bg-white p-12 shadow-sm">
-              <div className="flex flex-col items-center justify-center text-center">
-                <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-zinc-100 text-2xl">
-                  📋
-                </div>
-                <p className="text-zinc-500">Пока нет активности</p>
-                <p className="mt-1 text-sm text-zinc-400">
-                  Ваши действия появятся здесь
-                </p>
-              </div>
-            </div>
-          </section>
-        </main>
+        {/* Быстрые действия */}
+        <div style={{backgroundColor: 'white', borderRadius: '12px', padding: '1.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', marginBottom: '2rem'}}>
+          <h3 style={{fontWeight: '600', color: '#111827', margin: '0 0 1rem 0'}}>
+            Быстрые действия
+          </h3>
+          <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem'}}>
+            {[
+              { href: '/dashboard/clients/new',  label: '+ Новый клиент',  color: '#3b82f6' },
+              { href: '/dashboard/deals/new',    label: '+ Новая сделка',  color: '#f59e0b' },
+              { href: '/dashboard/invoices/new', label: '+ Новый инвойс',  color: '#22c55e' },
+            ].map((action, i) => (
+              <Link
+                key={i}
+                href={action.href}
+                style={{display: 'block', textAlign: 'center', backgroundColor: action.color, color: 'white', padding: '0.75rem', borderRadius: '8px', fontWeight: '500', textDecoration: 'none', fontSize: '0.95rem'}}
+              >
+                {action.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* Апгрейд баннер */}
+        <div style={{background: 'linear-gradient(135deg, #2563eb, #7c3aed)', borderRadius: '12px', padding: '1.5rem', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+          <div>
+            <h3 style={{fontWeight: 'bold', fontSize: '1.1rem', margin: '0 0 0.25rem 0'}}>
+              ⭐ Перейди на Pro
+            </h3>
+            <p style={{color: '#bfdbfe', margin: 0, fontSize: '0.9rem'}}>
+              Безлимитные клиенты, сделки и инвойсы за $9/месяц
+            </p>
+          </div>
+          <Link
+            href="/pricing"
+            style={{backgroundColor: 'white', color: '#2563eb', padding: '0.5rem 1.5rem', borderRadius: '8px', fontWeight: '600', textDecoration: 'none', whiteSpace: 'nowrap'}}
+          >
+            Попробовать Pro →
+          </Link>
+        </div>
+
       </div>
     </div>
-  );
+  )
 }
