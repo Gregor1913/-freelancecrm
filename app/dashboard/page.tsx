@@ -20,7 +20,15 @@ const statCards = [
 
 export default function Dashboard() {
   const { user } = useUser();
-  const displayName = user?.firstName ?? user?.username ?? "Пользователь";
+
+  const emailName =
+    user?.primaryEmailAddress?.emailAddress?.split("@")[0] ?? "";
+  const displayName =
+    user?.firstName ||
+    user?.fullName ||
+    user?.username ||
+    emailName ||
+    "Пользователь";
 
   return (
     <div className="flex min-h-screen bg-zinc-50">
