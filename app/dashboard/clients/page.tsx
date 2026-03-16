@@ -1,251 +1,170 @@
-"use client";
+'use client'
 
-import { useUser, UserButton } from "@clerk/nextjs";
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { useState, useEffect } from 'react'
+import { useUser } from '@clerk/nextjs'
+import { supabase } from '@/lib/supabase'
+import Link from 'next/link'
 
-const sidebarLinks = [
-  { href: "/dashboard", label: "Dashboard", icon: "🏠" },
-  { href: "/dashboard/clients", label: "Клиенты", icon: "👥" },
-  { href: "/dashboard/deals", label: "Сделки", icon: "💼" },
-  { href: "/dashboard/invoices", label: "Инвойсы", icon: "📄" },
-  { href: "/dashboard/reminders", label: "Напоминания", icon: "🔔" },
-];
-
-type Client = {
-  id: string;
-  name: string;
-  email: string | null;
-  phone: string | null;
-  company: string | null;
-  created_at: string;
-};
-
-export default function ClientsPage() {
-  const { user } = useUser();
-  const [clients, setClients] = useState<Client[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-
-  const filteredClients = clients.filter((client) => {
-    const q = searchQuery.trim().toLowerCase();
-    if (!q) return true;
-    const name = (client.name ?? "").toLowerCase();
-    const email = (client.email ?? "").toLowerCase();
-    const company = (client.company ?? "").toLowerCase();
-    return name.includes(q) || email.includes(q) || company.includes(q);
-  });
-
-  useEffect(() => {
-    if (!user?.id) return;
-
-    const fetchClients = async () => {
-      const { data } = await supabase
-        .from("clients")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
-
-      setClients((data as Client[]) ?? []);
-      setLoading(false);
-    };
-
-    fetchClients();
-  }, [user?.id]);
-
-  const handleDeleteClient = async (id: string) => {
-    if (!user?.id) return;
-
-    const confirmed = window.confirm(
-      "Вы уверены что хотите удалить клиента?"
-    );
-
-    if (!confirmed) return;
-
-    const { error } = await supabase
-      .from("clients")
-      .delete()
-      .eq("id", id)
-      .eq("user_id", user.id);
-
-    if (error) {
-      console.error("Ошибка при удалении клиента:", error.message);
-      return;
-    }
-
-    setClients((prev) => prev.filter((client) => client.id !== id));
-  };
-  return (
-    <div className="flex min-h-screen bg-zinc-50">
-      {/* Sidebar */}
-      <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-zinc-200 bg-white">
-        <div className="flex h-16 items-center border-b border-zinc-200 px-6">
-          <Link href="/dashboard" className="cursor-pointer text-lg font-bold text-zinc-900">
-            FreelanceCRM
-          </Link>
-        </div>
-        <nav className="space-y-1 p-4">
-          {sidebarLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="flex cursor-pointer items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100 hover:text-zinc-900"
-            >
-              <span className="text-lg">{link.icon}</span>
-              {link.label}
-            </Link>
-          ))}
-        </nav>
-      </aside>
-
-      {/* Main content */}
-      <div className="ml-64 flex flex-1 flex-col">
-        {/* Header */}
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-zinc-200 bg-white px-8 shadow-sm">
-          <h1 className="text-xl font-semibold text-zinc-800">Клиенты</h1>
-          <UserButton />
-        </header>
-
-        {/* Content */}
-        <main className="flex-1 p-8">
-          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <h2 className="text-lg font-semibold text-zinc-800">Мои клиенты</h2>
-            <Link
-              href="/dashboard/clients/new"
-              className="w-fit cursor-pointer rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800"
-            >
-              Добавить клиента
-            </Link>
-          </div>
-
-          {loading ? (
-            <div className="rounded-xl border border-zinc-200 bg-white p-16 shadow-sm">
-              <p className="text-center text-zinc-500">Загрузка...</p>
-            </div>
-          ) : clients.length === 0 ? (
-            /* Empty state */
-            <div className="rounded-xl border border-zinc-200 bg-white p-16 shadow-sm">
-              <div className="flex flex-col items-center justify-center text-center">
-                <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-zinc-100 text-4xl">
-                  👥
-                </div>
-                <h3 className="mb-2 text-xl font-semibold text-zinc-800">
-                  Клиентов пока нет
-                </h3>
-                <p className="mb-6 max-w-sm text-zinc-500">
-                  Добавьте первого клиента, чтобы начать вести базу контактов
-                </p>
-                <Link
-                  href="/dashboard/clients/new"
-                  className="cursor-pointer rounded-lg bg-zinc-900 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-zinc-800"
-                >
-                  Добавить первого клиента
-                </Link>
-              </div>
-            </div>
-          ) : (
-            <>
-              {/* Search */}
-              <div className="mb-4">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Поиск по имени, email или компании..."
-                  className="w-full max-w-md rounded-lg border border-zinc-300 px-4 py-2.5 text-sm text-zinc-900 placeholder-zinc-400 focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500"
-                />
-              </div>
-
-              {filteredClients.length === 0 ? (
-                /* Nothing found */
-                <div className="rounded-xl border border-zinc-200 bg-white p-12 shadow-sm">
-                  <p className="text-center text-zinc-500">
-                    Ничего не найдено по запросу:{" "}
-                    <span className="font-medium text-zinc-700">
-                      {searchQuery.trim()}
-                    </span>
-                  </p>
-                </div>
-              ) : (
-                /* Table */
-                <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
-                  <div className="overflow-x-auto">
-                    <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-                      <table className="w-full min-w-[640px]" style={{ minWidth: '600px' }}>
-                      <thead>
-                    <tr className="border-b border-zinc-200 bg-zinc-50">
-                      <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-zinc-500">
-                        Имя клиента
-                      </th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-zinc-500">
-                        Email
-                      </th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-zinc-500">
-                        Телефон
-                      </th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-zinc-500">
-                        Компания
-                      </th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-zinc-500">
-                        Дата добавления
-                      </th>
-                      <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-zinc-500">
-                        Действия
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-zinc-200">
-                    {filteredClients.map((client) => (
-                      <tr
-                        key={client.id}
-                        className="transition-colors hover:bg-zinc-50"
-                      >
-                        <td className="px-6 py-4 text-sm font-medium text-zinc-900">
-                          {client.name}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-zinc-600">
-                          {client.email ?? "—"}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-zinc-600">
-                          {client.phone ?? "—"}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-zinc-600">
-                          {client.company ?? "—"}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-zinc-600">
-                          {new Date(client.created_at).toLocaleDateString("ru-RU")}
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex justify-end gap-2">
-                            <Link
-                              href={`/dashboard/clients/${client.id}/edit`}
-                              className="cursor-pointer rounded-lg border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-100"
-                            >
-                              Редактировать
-                            </Link>
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteClient(client.id)}
-                              className="cursor-pointer rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-100"
-                            >
-                              Удалить
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                    </div>
-              </div>
-            </div>
-              )}
-            </>
-          )}
-        </main>
-      </div>
-    </div>
-  );
+interface Client {
+  id: string
+  name: string
+  email: string
+  phone: string
+  company: string
+  created_at: string
 }
 
+export default function ClientsPage() {
+  const { user } = useUser()
+  const [clients, setClients] = useState<Client[]>([])
+  const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
+
+  useEffect(() => {
+    if (user) loadClients()
+  }, [user])
+
+  async function loadClients() {
+    const { data } = await supabase
+      .from('clients')
+      .select('*')
+      .eq('user_id', user?.id)
+      .order('created_at', { ascending: false })
+    if (data) setClients(data)
+    setLoading(false)
+  }
+
+  async function deleteClient(id: string) {
+    if (!confirm('Удалить клиента?')) return
+    await supabase.from('clients').delete().eq('id', id)
+    setClients(clients.filter(c => c.id !== id))
+  }
+
+  const filtered = clients.filter(c =>
+    c.name?.toLowerCase().includes(search.toLowerCase()) ||
+    c.email?.toLowerCase().includes(search.toLowerCase()) ||
+    c.company?.toLowerCase().includes(search.toLowerCase())
+  )
+
+  if (loading) return (
+    <div style={{padding: '2rem', color: '#111827'}}>Загрузка...</div>
+  )
+
+  return (
+    <div style={{backgroundColor: '#f9fafb', minHeight: '100vh', padding: '1rem'}}>
+      <div style={{maxWidth: '900px', margin: '0 auto'}}>
+
+        {/* Заголовок */}
+        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem'}}>
+          <h1 style={{fontSize: '1.5rem', fontWeight: 'bold', color: '#111827', margin: 0}}>
+            👥 Клиенты
+          </h1>
+          <Link
+            href="/dashboard/clients/new"
+            style={{backgroundColor: '#2563eb', color: 'white', padding: '0.5rem 1rem', borderRadius: '8px', textDecoration: 'none', fontWeight: '500', fontSize: '0.9rem'}}
+          >
+            + Добавить
+          </Link>
+        </div>
+
+        {/* Поиск */}
+        <input
+          type="text"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="🔍 Поиск по имени, email, компании..."
+          style={{width: '100%', border: '1px solid #d1d5db', borderRadius: '8px', padding: '0.625rem 1rem', color: '#111827', fontSize: '1rem', marginBottom: '1rem', boxSizing: 'border-box', backgroundColor: 'white'}}
+        />
+
+        {/* Список клиентов */}
+        {filtered.length === 0 ? (
+          <div style={{textAlign: 'center', padding: '3rem', backgroundColor: 'white', borderRadius: '12px'}}>
+            <p style={{fontSize: '3rem', margin: '0 0 0.5rem 0'}}>👥</p>
+            <p style={{color: '#111827', fontWeight: '600', margin: '0 0 0.25rem 0'}}>
+              {search ? `Ничего не найдено по "${search}"` : 'Клиентов пока нет'}
+            </p>
+            <p style={{color: '#6b7280', margin: '0 0 1rem 0'}}>
+              Добавьте первого клиента
+            </p>
+            <Link
+              href="/dashboard/clients/new"
+              style={{backgroundColor: '#2563eb', color: 'white', padding: '0.5rem 1rem', borderRadius: '8px', textDecoration: 'none'}}
+            >
+              + Добавить клиента
+            </Link>
+          </div>
+        ) : (
+          <div style={{display: 'flex', flexDirection: 'column', gap: '0.75rem'}}>
+            {filtered.map(client => (
+              <div
+                key={client.id}
+                style={{backgroundColor: 'white', borderRadius: '12px', padding: '1rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', border: '1px solid #e5e7eb'}}
+              >
+                {/* Верхняя строка — имя и кнопки */}
+                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem'}}>
+                  <div>
+                    <p style={{fontWeight: '700', color: '#111827', margin: '0 0 0.2rem 0', fontSize: '1rem'}}>
+                      {client.name}
+                    </p>
+                    {client.company && (
+                      <p style={{color: '#6b7280', fontSize: '0.8rem', margin: 0}}>
+                        🏢 {client.company}
+                      </p>
+                    )}
+                  </div>
+                  <div style={{display: 'flex', gap: '0.5rem', flexShrink: 0}}>
+                    <Link
+                      href={`/dashboard/clients/${client.id}/edit`}
+                      style={{padding: '0.375rem 0.75rem', borderRadius: '6px', border: '1px solid #d1d5db', color: '#374151', textDecoration: 'none', fontSize: '0.8rem', fontWeight: '500'}}
+                    >
+                      ✏️
+                    </Link>
+                    <button
+                      onClick={() => deleteClient(client.id)}
+                      style={{padding: '0.375rem 0.75rem', borderRadius: '6px', border: '1px solid #fca5a5', backgroundColor: '#fef2f2', color: '#ef4444', cursor: 'pointer', fontSize: '0.8rem'}}
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                </div>
+
+                {/* Контактная информация */}
+                <div style={{display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '0.5rem'}}>
+                  {client.email && (
+                    <a
+                      href={`mailto:${client.email}`}
+                      style={{color: '#2563eb', fontSize: '0.85rem', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.25rem'}}
+                    >
+                      📧 {client.email}
+                    </a>
+                  )}
+                  {client.phone && (
+                    <a
+                      href={`tel:${client.phone}`}
+                      style={{color: '#2563eb', fontSize: '0.85rem', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.25rem'}}
+                    >
+                      📞 {client.phone}
+                    </a>
+                  )}
+                </div>
+
+                {/* Дата */}
+                <p style={{color: '#9ca3af', fontSize: '0.75rem', margin: '0.5rem 0 0 0'}}>
+                  Добавлен: {new Date(client.created_at).toLocaleDateString('ru-RU')}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Счётчик */}
+        {filtered.length > 0 && (
+          <p style={{textAlign: 'center', color: '#9ca3af', fontSize: '0.8rem', marginTop: '1rem'}}>
+            Показано {filtered.length} из {clients.length} клиентов
+          </p>
+        )}
+
+      </div>
+    </div>
+  )
+}
