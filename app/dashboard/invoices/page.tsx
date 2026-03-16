@@ -125,7 +125,8 @@ export default function InvoicesPage() {
         </div>
       ) : (
         <div style={{backgroundColor: 'white', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflow: 'hidden'}}>
-          <table style={{width: '100%', borderCollapse: 'collapse'}}>
+          <div style={{overflowX: 'auto', WebkitOverflowScrolling: 'touch'}}>
+            <table style={{width: '100%', borderCollapse: 'collapse', minWidth: '600px'}}>
             <thead>
               <tr style={{backgroundColor: '#f9fafb', borderBottom: '1px solid #e5e7eb'}}>
                 <th style={{padding: '0.75rem 1rem', textAlign: 'left', color: '#374151', fontWeight: '600', fontSize: '0.875rem'}}>Клиент</th>
@@ -188,6 +189,7 @@ export default function InvoicesPage() {
               })}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>

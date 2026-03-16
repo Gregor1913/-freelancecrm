@@ -32,16 +32,11 @@ export async function POST() {
     })
 
     return NextResponse.json({ url: session.url })
-  } catch (error: unknown) {
+  } catch (error: any) {
     console.error('Stripe error:', error)
-
-    const message =
-      error instanceof Error
-        ? error.message
-        : typeof error === 'string'
-          ? error
-          : 'Unknown error'
-
-    return NextResponse.json({ error: message }, { status: 500 })
+    return NextResponse.json(
+      { error: error.message },
+      { status: 500 }
+    )
   }
 }

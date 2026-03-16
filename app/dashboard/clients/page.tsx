@@ -171,7 +171,8 @@ export default function ClientsPage() {
                 /* Table */
                 <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
                   <div className="overflow-x-auto">
-                    <table className="w-full min-w-[640px]">
+                    <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                      <table className="w-full min-w-[640px]" style={{ minWidth: '600px' }}>
                       <thead>
                     <tr className="border-b border-zinc-200 bg-zinc-50">
                       <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-zinc-500">
@@ -236,6 +237,7 @@ export default function ClientsPage() {
                     ))}
                   </tbody>
                 </table>
+                    </div>
               </div>
             </div>
               )}

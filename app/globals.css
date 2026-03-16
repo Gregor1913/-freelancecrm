@@ -29,3 +29,42 @@ button:not(:disabled),
 a {
   cursor: pointer;
 }
+/* ===== МОБИЛЬНАЯ АДАПТИВНОСТЬ ===== */
+
+/* Таблицы на мобильном */
+@media (max-width: 768px) {
+
+  /* Таблицы скроллятся горизонтально */
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Grid из 4 колонок → 2 колонки на планшете → 1 на телефоне */
+  [style*="repeat(4, 1fr)"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  [style*="repeat(3, 1fr)"] {
+    grid-template-columns: repeat(1, 1fr) !important;
+  }
+
+  [style*="repeat(2, 1fr)"] {
+    grid-template-columns: repeat(1, 1fr) !important;
+  }
+
+  /* Кнопки во весь экран на мобильном */
+  [style*="display: flex"][style*="gap"] {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Grid из 2 колонок → 1 на маленьком телефоне */
+  [style*="repeat(2, 1fr)"],
+  [style*="repeat(4, 1fr)"] {
+    grid-template-columns: repeat(1, 1fr) !important;
+  }
+}

@@ -79,7 +79,7 @@ export default function DealsPage() {
       </div>
 
       {/* Kanban доска */}
-      <div style={{display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem'}}>
+      <div style={{display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : 'repeat(4, 1fr)', gap: '1rem'}}>
         {COLUMNS.map(col => {
           const colDeals = deals.filter(d => d.status === col.id)
           const total = colDeals.reduce((sum, d) => sum + (d.amount || 0), 0)

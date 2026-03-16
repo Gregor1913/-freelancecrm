@@ -62,35 +62,65 @@ export default function Dashboard() {
   return (
     <div style={{backgroundColor: '#f9fafb', minHeight: '100vh'}}>
 
-      {/* Navbar */}
-      <nav style={{backgroundColor: 'white', borderBottom: '1px solid #e5e7eb', padding: '0 2rem', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 10}}>
-        <div style={{display: 'flex', alignItems: 'center', gap: '2rem'}}>
-          <h1 style={{fontSize: '1.25rem', fontWeight: 'bold', color: '#2563eb', margin: 0}}>
-            FreelanceCRM
-          </h1>
-          <div style={{display: 'flex', gap: '0.25rem'}}>
-            {[
-              { href: '/dashboard',          label: '🏠 Главная' },
-              { href: '/dashboard/clients',  label: '👥 Клиенты' },
-              { href: '/dashboard/deals',    label: '💼 Сделки' },
-              { href: '/dashboard/invoices', label: '📄 Инвойсы' },
-              { href: '/pricing',            label: '⭐ Pro' },
-            ].map(item => (
-              <Link
-                key={item.href}
-                href={item.href}
-                style={{padding: '0.5rem 0.75rem', borderRadius: '8px', textDecoration: 'none', color: '#374151', fontSize: '0.875rem', fontWeight: '500'}}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </div>
-        </div>
-        <div style={{display: 'flex', alignItems: 'center', gap: '1rem'}}>
-          <span style={{color: '#6b7280', fontSize: '0.875rem'}}>
+      {/* Mobile Navbar */}
+      <nav
+        style={{
+          backgroundColor: 'white',
+          borderBottom: '1px solid #e5e7eb',
+          padding: '0 1rem',
+          height: '56px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          position: 'sticky',
+          top: 0,
+          zIndex: 10,
+        }}
+      >
+        {/* Logo + Username (compact) */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.1rem' }}>
+          <span style={{ fontSize: '1rem', fontWeight: 'bold', color: '#2563eb' }}>FreelanceCRM</span>
+          <span style={{ color: '#6b7280', fontSize: '0.75rem', maxWidth: '160px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {user?.firstName || user?.emailAddresses[0]?.emailAddress}
           </span>
-          <UserButton />
+        </div>
+
+        {/* Right side: quick actions + user button */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          {/* Primary shortcut to main dashboard */}
+          <Link
+            href="/dashboard"
+            style={{
+              padding: '0.35rem 0.6rem',
+              borderRadius: '999px',
+              backgroundColor: '#2563eb',
+              color: 'white',
+              fontSize: '0.75rem',
+              fontWeight: 500,
+              textDecoration: 'none',
+            }}
+          >
+            🏠
+          </Link>
+
+          {/* Compact Pro badge */}
+          <Link
+            href="/pricing"
+            style={{
+              padding: '0.3rem 0.5rem',
+              borderRadius: '999px',
+              border: '1px solid #e5e7eb',
+              fontSize: '0.75rem',
+              textDecoration: 'none',
+            }}
+          >
+            ⭐ Pro
+          </Link>
+
+          {/* User avatar */}
+          <div style={{ transform: 'scale(0.9)' }}>
+            <UserButton />
+          </div>
         </div>
       </nav>
 
