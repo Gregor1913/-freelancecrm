@@ -1,146 +1,95 @@
-"use client";
-
-import { useEffect } from "react";
-import { supabase } from "@/lib/supabase";
+import Link from 'next/link'
 
 export default function Home() {
-  useEffect(() => {
-    supabase
-      .from("clients")
-      .select("*")
-      .then(({ data, error }) => {
-        if (error) {
-          console.error("Supabase error:", error);
-          return;
-        }
-        console.log("Clients:", data);
-      });
-  }, []);
   return (
-    <div className="min-h-screen bg-white">
+    <div style={{minHeight: '100vh', backgroundColor: 'white'}}>
+
       {/* Navbar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-zinc-200 bg-white/80 backdrop-blur-sm">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-          <span className="text-xl font-bold text-zinc-900">FreelanceCRM</span>
-          <a
-            href="#"
-            className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800"
+      <nav style={{borderBottom: '1px solid #e5e7eb', padding: '0 2rem', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+        <h1 style={{fontSize: '1.25rem', fontWeight: 'bold', color: '#2563eb', margin: 0}}>
+          FreelanceCRM
+        </h1>
+        <div style={{display: 'flex', gap: '1rem', alignItems: 'center'}}>
+          <Link href="/pricing" style={{color: '#374151', textDecoration: 'none', fontWeight: '500'}}>
+            Тарифы
+          </Link>
+          <Link
+            href="/sign-in"
+            style={{border: '1px solid #e5e7eb', color: '#374151', padding: '0.5rem 1rem', borderRadius: '8px', textDecoration: 'none', fontWeight: '500'}}
           >
             Войти
-          </a>
+          </Link>
+          <Link
+            href="/sign-up"
+            style={{backgroundColor: '#2563eb', color: 'white', padding: '0.5rem 1rem', borderRadius: '8px', textDecoration: 'none', fontWeight: '500'}}
+          >
+            Начать бесплатно
+          </Link>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="pt-32 pb-20">
-        <div className="mx-auto max-w-4xl px-6 text-center">
-          <h1 className="mb-6 text-4xl font-bold tracking-tight text-zinc-900 sm:text-5xl md:text-6xl">
-            CRM для фрилансеров
-          </h1>
-          <p className="mx-auto mb-10 max-w-2xl text-lg text-zinc-600 sm:text-xl">
-            Управляй клиентами, сделками и инвойсами в одном месте
-          </p>
-          <a
-            href="#"
-            className="inline-block rounded-lg bg-zinc-900 px-8 py-4 text-base font-medium text-white transition-colors hover:bg-zinc-800"
+      {/* Hero */}
+      <div style={{textAlign: 'center', padding: '5rem 2rem 3rem'}}>
+        <h2 style={{fontSize: '3rem', fontWeight: 'bold', color: '#111827', marginBottom: '1.5rem', lineHeight: '1.2'}}>
+          CRM для фрилансеров
+        </h2>
+        <p style={{fontSize: '1.25rem', color: '#6b7280', marginBottom: '2.5rem', maxWidth: '600px', margin: '0 auto 2.5rem'}}>
+          Управляй клиентами, сделками и инвойсами в одном месте
+        </p>
+        <div style={{display: 'flex', gap: '1rem', justifyContent: 'center'}}>
+          <Link
+            href="/sign-up"
+            style={{backgroundColor: '#2563eb', color: 'white', padding: '0.875rem 2rem', borderRadius: '8px', textDecoration: 'none', fontWeight: '600', fontSize: '1.1rem'}}
           >
-            Начать бесплатно
-          </a>
+            Начать бесплатно →
+          </Link>
+          <Link
+            href="/pricing"
+            style={{border: '2px solid #e5e7eb', color: '#374151', padding: '0.875rem 2rem', borderRadius: '8px', textDecoration: 'none', fontWeight: '600', fontSize: '1.1rem'}}
+          >
+            Смотреть тарифы
+          </Link>
         </div>
-      </section>
+      </div>
 
-      {/* Feature Cards */}
-      <section className="pb-24">
-        <div className="mx-auto max-w-6xl px-6">
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="rounded-xl border border-zinc-200 bg-white p-8 shadow-sm transition-shadow hover:shadow-md">
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-zinc-100 text-zinc-600">
-                <svg
-                  className="h-6 w-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                  />
-                </svg>
-              </div>
-              <h3 className="mb-2 text-xl font-semibold text-zinc-900">Клиенты</h3>
-              <p className="text-zinc-600">
-                Храни контакты и историю взаимодействия со всеми клиентами в удобной базе
-              </p>
-            </div>
-
-            <div className="rounded-xl border border-zinc-200 bg-white p-8 shadow-sm transition-shadow hover:shadow-md">
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-zinc-100 text-zinc-600">
-                <svg
-                  className="h-6 w-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
-                  />
-                </svg>
-              </div>
-              <h3 className="mb-2 text-xl font-semibold text-zinc-900">Сделки</h3>
-              <p className="text-zinc-600">
-                Отслеживай этапы сделок и не упускай возможности закрыть новый проект
-              </p>
-            </div>
-
-            <div className="rounded-xl border border-zinc-200 bg-white p-8 shadow-sm transition-shadow hover:shadow-md">
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-zinc-100 text-zinc-600">
-                <svg
-                  className="h-6 w-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"
-                  />
-                </svg>
-              </div>
-              <h3 className="mb-2 text-xl font-semibold text-zinc-900">Инвойсы</h3>
-              <p className="text-zinc-600">
-                Создавай счета и контролируй оплаты в пару кликов
-              </p>
-            </div>
+      {/* Карточки */}
+      <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', maxWidth: '900px', margin: '0 auto', padding: '2rem'}}>
+        {[
+          { icon: '👥', title: 'Клиенты', desc: 'Храни контакты и историю взаимодействия со всеми клиентами в удобной базе' },
+          { icon: '💼', title: 'Сделки', desc: 'Отслеживай этапы сделок на Kanban доске и не упускай новые проекты' },
+          { icon: '📄', title: 'Инвойсы', desc: 'Создавай счета и скачивай PDF в один клик. Контролируй оплаты' },
+        ].map((card, i) => (
+          <div key={i} style={{backgroundColor: '#f9fafb', borderRadius: '12px', padding: '1.5rem', border: '1px solid #e5e7eb'}}>
+            <p style={{fontSize: '2rem', marginBottom: '0.75rem'}}>{card.icon}</p>
+            <h3 style={{fontWeight: '600', color: '#111827', marginBottom: '0.5rem', fontSize: '1.1rem'}}>{card.title}</h3>
+            <p style={{color: '#6b7280', lineHeight: '1.6', margin: 0}}>{card.desc}</p>
           </div>
-        </div>
-      </section>
+        ))}
+      </div>
 
-      {/* Footer */}
-      <footer className="border-t border-zinc-200 bg-zinc-50 py-8">
-        <div className="mx-auto max-w-6xl px-6">
-          <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
-            <span className="text-sm font-medium text-zinc-600">FreelanceCRM</span>
-            <div className="flex gap-6 text-sm text-zinc-500">
-              <a href="#" className="hover:text-zinc-900">
-                Политика конфиденциальности
-              </a>
-              <a href="#" className="hover:text-zinc-900">
-                Условия использования
-              </a>
-            </div>
-          </div>
-          <p className="mt-4 text-center text-sm text-zinc-400 sm:text-left">
-            © {new Date().getFullYear()} FreelanceCRM. Все права защищены.
-          </p>
-        </div>
+      {/* CTA баннер */}
+      <div style={{background: 'linear-gradient(135deg, #2563eb, #7c3aed)', margin: '2rem auto', maxWidth: '900px', borderRadius: '16px', padding: '3rem 2rem', textAlign: 'center'}}>
+        <h3 style={{color: 'white', fontSize: '1.75rem', fontWeight: 'bold', marginBottom: '1rem'}}>
+          Готов начать?
+        </h3>
+        <p style={{color: '#bfdbfe', marginBottom: '2rem', fontSize: '1.1rem'}}>
+          Бесплатно — без кредитной карты
+        </p>
+        <Link
+          href="/sign-up"
+          style={{backgroundColor: 'white', color: '#2563eb', padding: '0.875rem 2.5rem', borderRadius: '8px', textDecoration: 'none', fontWeight: '700', fontSize: '1.1rem'}}
+        >
+          Создать аккаунт бесплатно
+        </Link>
+      </div>
+
+      {/* Футер */}
+      <footer style={{borderTop: '1px solid #e5e7eb', padding: '2rem', textAlign: 'center'}}>
+        <p style={{color: '#9ca3af', margin: 0}}>
+          © 2026 FreelanceCRM. Все права защищены.
+        </p>
       </footer>
+
     </div>
-  );
+  )
 }
